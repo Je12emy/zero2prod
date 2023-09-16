@@ -19,7 +19,7 @@ ENV SQLX_OFFLINE true
 # We'll use the release profile to make it faaaast
 RUN cargo build --release --bin zero2prod
 
-FROM debian:bullseye-slim AS runtime
+FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 RUN apt-get update -y \
     && apt-get install -y --no-install-recommends openssl ca-certificates \
@@ -30,4 +30,4 @@ COPY --from=builder /app/target/release/zero2prod zero2prod
 COPY configuration configuration
 ENV APP_ENVIRONMENT production
 # When `docker run` is executed, launch the binary!
-ENTRYPOINT ["./target/release/zero2prod"]
+ENTRYPOINT ["./zero2prod"]
