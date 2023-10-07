@@ -1,6 +1,5 @@
 use once_cell::sync::Lazy;
 use reqwest::Client;
-use secrecy::ExposeSecret;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use uuid::Uuid;
 use zero2prod::{
@@ -78,7 +77,7 @@ async fn subscribe_returns_a_400_when_data_is_missing() {
 }
 
 #[tokio::test]
-async fn susbscribe_returns_a_200_when_fields_are_present_but_empty() {
+async fn susbscribe_returns_a_400_when_fields_are_present_but_invalid() {
     let app = spawn_app().await;
     let client = Client::new();
     let test_cases = vec![
@@ -95,7 +94,7 @@ async fn susbscribe_returns_a_200_when_fields_are_present_but_empty() {
             .await
             .expect("Failed to execute request");
         assert_eq!(
-            200,
+            400,
             response.status().as_u16(),
             "The API did not return a 200 Ok when the payload was {}.",
             description
