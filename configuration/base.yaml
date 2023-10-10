@@ -8,3 +8,6 @@ database:
   password: "password"
   database_name: "newsletter"
   require_ssl: false
+email_client:
+  base_url: "https://api.postmarkapp.com/email"
+  sender_email: "jeremy@je12emy.com"

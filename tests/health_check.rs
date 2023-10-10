@@ -4,6 +4,7 @@ use sqlx::{Connection, Executor, PgConnection, PgPool};
 use uuid::Uuid;
 use zero2prod::{
     configuration::{get_configuration, DatabaseSettings},
+    email_client::EmailClient,
     startup,
     telemetry::{get_subscriber, init_subscriber},
 };
@@ -125,10 +126,12 @@ async fn spawn_app() -> TestApp {
         std::net::TcpListener::bind("127.0.0.1:0").expect("Failed to bind to random port.");
     let port = listener.local_addr().unwrap().port();
     let mut configuration = get_configuration().expect("Failed to read configuration.");
+    let sender_email = configuration.email_client.sender_email;
+    let email_client = EmailClient::new(configuration.email_client.base_url, sender_email);
     configuration.database.database_name = Uuid::new_v4().to_string();
     let connection_pool = configure_database(&configuration.database).await;
-    let server =
-        startup::run(listener, connection_pool.clone()).expect("Failed to bind to address.");
+    let server = startup::run(listener, connection_pool.clone(), email_client)
+        .expect("Failed to bind to address.");
     let _ = tokio::spawn(server);
 
     TestApp {
