@@ -126,7 +126,7 @@ async fn spawn_app() -> TestApp {
         std::net::TcpListener::bind("127.0.0.1:0").expect("Failed to bind to random port.");
     let port = listener.local_addr().unwrap().port();
     let mut configuration = get_configuration().expect("Failed to read configuration.");
-    let sender_email = configuration.email_client.sender_email;
+    let sender_email = configuration.email_client.sender().expect("Invalid sender email address.");
     let email_client = EmailClient::new(configuration.email_client.base_url, sender_email);
     configuration.database.database_name = Uuid::new_v4().to_string();
     let connection_pool = configure_database(&configuration.database).await;
