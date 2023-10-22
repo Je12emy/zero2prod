@@ -11,4 +11,4 @@ database:
 email_client:
   base_url: "https://api.postmarkapp.com/email"
   sender_email: "jeremy@je12emy.com"
-  authorization_token: "my_secret_token"
+  authorization_token: "f95d324b-9490-43de-acb9-dcfa85d8a456"
