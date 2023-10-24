@@ -5,21 +5,14 @@ use crate::helpers::spawn_app;
 #[tokio::test]
 async fn subscribe_returns_a_200_for_valid_form_data() {
     // Arrange
-    let test_app = spawn_app().await;
-    let client = Client::new();
+    let app = spawn_app().await;
     let body = "name=Jeremy%20Zelaya&email=jeremyzelaya%40example.com";
     // Act
-    let response = client
-        .post(&format!("{}/subscriptions", &test_app.address))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(body)
-        .send()
-        .await
-        .expect("Failed to execute request");
+    let response = app.post_subscriptions(body.into()).await;
     // Assert
     assert_eq!(200, response.status().as_u16());
     let saved = sqlx::query!("SELECT email, name FROM subscriptions")
-        .fetch_one(&test_app.db_pool)
+        .fetch_one(&app.db_pool)
         .await
         .expect("Failed to fetch saved subscription.");
     assert_eq!(saved.email, "jeremyzelaya@example.com");
@@ -29,8 +22,7 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
 #[tokio::test]
 async fn subscribe_returns_a_400_when_data_is_missing() {
     // Arrange
-    let test_app = spawn_app().await;
-    let client = Client::new();
+    let app = spawn_app().await;
     let test_cases = vec![
         ("name=Jeremy%20Zelaya", "missing email"),
         ("email=john%40example.com", "missing name"),
@@ -38,12 +30,7 @@ async fn subscribe_returns_a_400_when_data_is_missing() {
     ];
     // Act
     for (invalid_body, error_message) in test_cases {
-        let response = client
-            .post(&format!("{}/subscriptions", &test_app.address))
-            .body(invalid_body)
-            .send()
-            .await
-            .expect("Failed to execute request");
+        let response = app.post_subscriptions(invalid_body.into()).await;
         // Assert
         assert_eq!(
             400,
@@ -64,13 +51,7 @@ async fn susbscribe_returns_a_400_when_fields_are_present_but_invalid() {
         ("name=Ursula&email=not-an-email", "invalid email"),
     ];
     for (body, description) in test_cases {
-        let response = client
-            .post(&format!("{}/subscriptions", &app.address))
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .body(body)
-            .send()
-            .await
-            .expect("Failed to execute request");
+        let response = app.post_subscriptions(body.into()).await;
         assert_eq!(
             400,
             response.status().as_u16(),
